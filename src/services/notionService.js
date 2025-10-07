@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
  * @param {string} config.notionToken - Notion API Token
  * @param {string} config.databaseIdSkill - 技能資料庫 ID
  * @param {string} config.databaseIdDiary - 日記資料庫 ID
- * @returns {Promise<{skillOriginalData: any, diaryOriginalData: any}>} 回傳技能和日記資料
+ * @returns {Promise<{skillRawData: any, diaryRawData: any}>} 回傳技能和日記資料
  */
 export const fetchNotionData = async (config) => {
   if (!config) {
@@ -43,8 +43,8 @@ export const fetchNotionData = async (config) => {
     if (diaryError) throw diaryError;
 
     return {
-      skillOriginalData,
-      diaryOriginalData
+      skillRawData: skillOriginalData,
+      diaryRawData: diaryOriginalData
     };
   } catch (error) {
     console.error("獲取 Notion 資料時發生錯誤:", error);

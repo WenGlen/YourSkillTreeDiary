@@ -12,7 +12,7 @@ All colors MUST be HSL.
     --foreground: hsl(210 40% 98%);
 
     --panel: hsl(200 15% 8);
-    --card-foreground: hsl(210 40% 98%);
+    --panel-foreground: hsl(210 40% 98%);
 
     --card: hsl(220 23% 18%);
     --card-foreground: hsl(210 40% 98%);
@@ -114,6 +114,6 @@ a {
 }
 
 * {
-  /* */
-      *{outline: 1px solid #444444;}  
+  /*  
+      *{outline: 1px solid #444444;} */
 }
