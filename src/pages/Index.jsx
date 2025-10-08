@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { NotionConfigDialog } from "@/components/NotionConfigDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Settings, Database, RefreshCw, ChevronDown, ChevronRight, ExternalLink, Calendar, ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw } from "lucide-react";
+import { Settings, Database, RefreshCw, ChevronDown, ChevronRight, ExternalLink, Calendar, ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw, Play, Pause, Maximize, Minimize, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,6 +30,7 @@ import {
   createZoomHandler, 
   createZoomControls, 
   createRotationControls,
+  createAutoRotationController,
   applyRotation 
 } from '@/lib/transformUtils.js';
 //import { SkillTreeChart, SkillProgressChart, DiaryTimelineChart } from '@/components/charts';
@@ -51,9 +52,13 @@ const Index = () => {
   const [expandedDiaryId, setExpandedDiaryId] = useState(null); // 控制展開的日記
   const [zoom, setZoom] = useState(1); // 技能樹縮放比例
   const [rotation, setRotation] = useState(0); // 技能樹旋轉角度（度數）
+  const [isAutoRotating, setIsAutoRotating] = useState(false); // 是否正在自動旋轉
+  const [isHoveringSkillTree, setIsHoveringSkillTree] = useState(false); // 是否懸停在技能樹上
+  const [viewMode, setViewMode] = useState(0); // 視圖模式：0=正常, 1=專注(隱藏右側和統計), 2=極簡(只有控制按鈕)
   
   // 用於追蹤滾動容器的 ref
   const svgContainerRef = useRef(null);
+  const autoRotationControllerRef = useRef(null);
 
   // 檢查 Config 是否已有儲存的設定 //
   useEffect(() => { 
@@ -222,6 +227,42 @@ const Index = () => {
   const { zoomIn: handleZoomIn, zoomOut: handleZoomOut, zoomReset: handleZoomReset } = createZoomControls(zoom, handleZoom, 0.4, 3, 0.2);
   const { rotateLeft: handleRotateLeft, rotateRight: handleRotateRight, rotateReset: handleRotateReset } = createRotationControls(rotation, setRotation, 30);
 
+  // 初始化自動旋轉控制器
+  useEffect(() => {
+    if (!autoRotationControllerRef.current) {
+      autoRotationControllerRef.current = createAutoRotationController(setRotation, 1); // 30度/秒
+    }
+    
+    // 組件卸載時清理
+    return () => {
+      if (autoRotationControllerRef.current) {
+        autoRotationControllerRef.current.stop();
+      }
+    };
+  }, []);
+
+  // 處理自動旋轉的啟動/停止
+  useEffect(() => {
+    const controller = autoRotationControllerRef.current;
+    if (!controller) return;
+
+    if (isAutoRotating && !isHoveringSkillTree) {
+      controller.start();
+    } else {
+      controller.stop();
+    }
+  }, [isAutoRotating, isHoveringSkillTree]);
+
+  // 切換自動旋轉
+  const handleToggleAutoRotation = () => {
+    setIsAutoRotating(!isAutoRotating);
+  };
+
+  // 切換視圖模式
+  const handleToggleViewMode = () => {
+    setViewMode((prevMode) => (prevMode + 1) % 3); // 循環：0 -> 1 -> 2 -> 0
+  };
+
   /* ====== 技能樹的介面 ====== */
 
   return (
@@ -244,7 +285,9 @@ const Index = () => {
                style={{
                  alignItems: zoom < 1 ? 'center' : 'flex-start',
                  justifyContent: zoom < 1 ? 'center' : 'flex-start'
-               }}>
+               }}
+               onMouseEnter={() => setIsHoveringSkillTree(true)}
+               onMouseLeave={() => setIsHoveringSkillTree(false)}>
                  {skillNodes.length > 0 ? (
                     <div style={{
                       width: `${zoom * 100}%`,
@@ -345,6 +388,7 @@ const Index = () => {
                         </g>
                        
                         {/* 第 2 層：繪製技能名稱背景和文字（中間層） */}
+                        {viewMode < 2 && (
                         <g>
                           {skillNodes.map(node => {
                             const textStyle = getTextStyle(node, showSatelliteLabels);
@@ -380,6 +424,7 @@ const Index = () => {
                             );
                           })}
                         </g>
+                        )}
                        
                         {/* 第 3 層：繪製技能節點（最上層） */}
                         {skillNodes.map(node => {
@@ -429,14 +474,16 @@ const Index = () => {
           {/* 左下 技能樹數值與控制器 */}
           <div id="skill-tree-footer" 
                className="w-full bg-background flex items-start justify-between">    
-            <div id="skill-tree-title" 
-                className="py-2 px-4 gap-2 flex items-center z-10">
-              <h2 className="px-4 text-xl sm:text-2xl md:text-3xl font-semibold">
-                Skill Tree
-              </h2>
-              {/* 分隔線 */}
-              <div className="h-12 w-px bg-border"></div>
-              <div id="skill-tree-values" 
+            {viewMode < 2 && (
+              <div id="skill-tree-title" 
+                  className="py-2 px-4 gap-2 flex items-center z-10">
+                <h2 className="px-4 text-xl sm:text-2xl md:text-3xl font-semibold">
+                  Skill Tree Diary
+                </h2>
+                {/* 分隔線 */}
+                {viewMode === 0 && <div className="h-12 w-px bg-border"></div>}
+                {viewMode === 0 && (
+                  <div id="skill-tree-values" 
                 className="flex flex-col items-start justify-center">
                 {/* 顯示總計KIE 值 */}
                 <div className="py-1 px-2">
@@ -470,19 +517,59 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </div>
+                )}
+              </div>
+            )}
             {/* 縮放和旋轉控制按鈕 */}
             <div id="skill-tree-controler" 
                 className="py-2 px-3 flex items-center gap-4 z-10">
               
+              {/* 視圖模式切換 */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleToggleViewMode}
+                title={viewMode === 0 ? "專注模式" : viewMode === 1 ? "極簡模式" : "正常模式"}
+              >
+                {viewMode === 0 ? (
+                  <Minimize className="h-4 w-4" />
+                ) : viewMode === 1 ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize className="h-4 w-4" />
+                )}
+              </Button>
+
+              {/* 分隔線 */}
+              {viewMode < 2 && <div className="h-6 w-px bg-border"></div>}
+              
               {/* 旋轉控制 */}
-              <div id="rotation-control" className="flex items-center gap-1">
+              {viewMode < 2 && (
+                <div id="rotation-control" className="flex items-center gap-1">
+                <Button
+                  variant={isAutoRotating ? "default" : "outline"}
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={handleToggleAutoRotation}
+                  title={isAutoRotating ? "停止自動旋轉" : "開始自動旋轉"}
+                >
+                  {isAutoRotating ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                </Button>
+                <span className="text-xs sm:text-sm text-muted-foreground ml-1 min-w-[2.5rem] text-center">
+                  {Math.round(rotation)}°
+                </span>
                 <Button
                   variant="outline"
                   size="icon"
                   className="h-6 w-6"
                   onClick={handleRotateLeft}
                   title="向左旋轉 30°"
+                  disabled={isAutoRotating}
                 >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
@@ -492,6 +579,7 @@ const Index = () => {
                   className="h-6 w-6"
                   onClick={handleRotateReset}
                   title="重置旋轉"
+                  disabled={isAutoRotating}
                 >
                   <RefreshCw className="h-4 w-4" />
                 </Button>
@@ -501,19 +589,39 @@ const Index = () => {
                   className="h-6 w-6"
                   onClick={handleRotateRight}
                   title="向右旋轉 30°"
+                  disabled={isAutoRotating}
                 >
                   <RotateCw className="h-4 w-4" />
                 </Button>
-                <span className="text-xs sm:text-sm text-muted-foreground ml-2 min-w-[2.5rem] text-center">
-                  {rotation}°
-                </span>
               </div>
+              )}
+
+              {/* 自動旋轉按鈕（極簡模式也顯示） */}
+              {viewMode === 2 && (
+                <>
+                  <div className="h-6 w-px bg-border"></div>
+                  <Button
+                    variant={isAutoRotating ? "default" : "outline"}
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleToggleAutoRotation}
+                    title={isAutoRotating ? "停止自動旋轉" : "開始自動旋轉"}
+                  >
+                    {isAutoRotating ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </Button>
+                </>
+              )}
 
               {/* 分隔線 */}
-              <div className="h-6 w-px bg-border"></div>
+              {viewMode < 2 && <div className="h-6 w-px bg-border"></div>}
 
               {/* 縮放控制 */}
-              <div id="zoom-control" className="flex items-center gap-1">
+              {viewMode < 2 && (
+                <div id="zoom-control" className="flex items-center gap-1">
                 <span className="text-xs sm:text-sm text-muted-foreground min-w-[3rem] text-center">
                   {Math.round(zoom * 10)/10}x
                 </span>
@@ -546,16 +654,18 @@ const Index = () => {
                 </Button>
 
               </div>
+              )}
             </div>
           </div>
 
         </div>
 
         {/* 右側 資訊面板 */}
-        <div id="content-panel" 
-             className="gap-2 md:gap-4 flex flex-col 
-                        w-full h-auto
-                        md:w-[clamp(375px,40vw,480px)] md:h-full overflow-hidden">
+        {viewMode === 0 && (
+          <div id="content-panel" 
+               className="gap-2 md:gap-4 flex flex-col 
+                          w-full h-auto
+                          md:w-[clamp(375px,40vw,480px)] md:h-full overflow-hidden">
           {/* 右上 技能說明欄 */}
           <div id="skill-description-panel" 
                className="w-full bg-panel p-3 sm:p-4 md:p-6 rounded-md overflow-auto
@@ -835,7 +945,7 @@ const Index = () => {
             <p className="text-subtle-foreground 
                           hidden 
                           md:block">
-              v1-3.1
+              v1-3.2
             </p>         
             <div className="flex gap-2">
               <Button 
@@ -858,6 +968,7 @@ const Index = () => {
           </div>
 
         </div>
+        )}
 
         {/* 測試區 */}
         <div id="tester" 

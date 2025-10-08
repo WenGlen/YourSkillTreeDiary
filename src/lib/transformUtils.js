@@ -149,3 +149,51 @@ export const normalizeAngle = (degrees) => {
   return ((degrees % 360) + 360) % 360;
 };
 
+/**
+ * 創建自動旋轉控制器
+ * @param {Function} setRotation - 設置旋轉角度的函數
+ * @param {number} speed - 旋轉速度（度/秒），默認 30
+ * @returns {Object} 包含自動旋轉控制函數的對象
+ */
+export const createAutoRotationController = (setRotation, speed = 30) => {
+  let animationFrameId = null;
+  let lastTimestamp = null;
+  
+    lastTimestamp = performance.now();
+    
+    const animate = (timestamp) => {
+      if (lastTimestamp === null) {
+        lastTimestamp = timestamp;
+      }
+      
+      const deltaTime = (timestamp - lastTimestamp) / 1000; // 轉換為秒
+      const rotationDelta = speed * deltaTime;
+      
+      setRotation((prevRotation) => normalizeAngle(prevRotation + rotationDelta));
+      
+      lastTimestamp = timestamp;
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+  };
+  
+  const stop = () => {
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+      lastTimestamp = null;
+    }
+  };
+  
+  const isRunning = () => {
+    return animationFrameId !== null;
+  };
+  
+  return {
+    start,
+    stop,
+    isRunning
+  };
+};
+
