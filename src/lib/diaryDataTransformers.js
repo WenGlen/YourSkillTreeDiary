@@ -20,7 +20,7 @@ export const transformDiaryData = (diaryDawData) => {
         kie: { k, i, e },
         linkName: props["Link-Name"]?.rich_text?.[0]?.plain_text || "",
         linkUrl: props["Link-URL"]?.url || "",
-        skillsId: (props["Skills"]?.relation ?? []).map((rel) => rel.id),
+        skillsId: (props["Skill"]?.relation ?? []).map((rel) => rel.id),
       };
     });
     return {

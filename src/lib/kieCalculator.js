@@ -26,8 +26,8 @@ export const calculateSkillKIE = (skillId, skillList, diaryList, cache = {}) => 
 
   if (diaryList) {
     Object.values(diaryList).forEach((diary) => {
-      // 檢查這個日記是否關聯到當前技能
-      if (diary.skillsId && diary.skillsId.includes(skillId)) {
+      // 檢查這個日記是否關聯到當前技能，且狀態不是 Writing
+      if (diary.skillsId && diary.skillsId.includes(skillId) && diary.state !== 'Writing') {
         totalK += diary.kie.k || 0;
         totalI += diary.kie.i || 0;
         totalE += diary.kie.e || 0;

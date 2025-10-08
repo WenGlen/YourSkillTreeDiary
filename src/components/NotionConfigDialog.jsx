@@ -42,7 +42,7 @@ export function NotionConfigDialog({ open, onOpenChange, onConfigSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg ">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
 
         <DialogHeader>
           <DialogTitle>Notion API 設定</DialogTitle>
@@ -52,7 +52,7 @@ export function NotionConfigDialog({ open, onOpenChange, onConfigSaved }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-6 space-y-12 ">
+        <div className="py-4 space-y-8">
           <div className="space-y-4">
             <Label htmlFor="token">Notion Token</Label>
             <Input

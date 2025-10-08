@@ -11,7 +11,9 @@ const queryClient = new QueryClient();
 const router = createBrowserRouter([
   { path: "/", element: <Index /> },
   { path: "*", element: <NotFound /> },
-]);
+], {
+  basename: import.meta.env.MODE === 'production' ? '/YourSkillTreeDiary/' : '/',
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

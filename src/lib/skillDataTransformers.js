@@ -14,7 +14,7 @@ export const transformSkillData = (skillRawData) => {
         name: props?.["Skill-Name"]?.title?.[0]?.plain_text || "未命名",
         description: (props?.["Skill-Description"]?.rich_text?.[0]?.plain_text || "").trim(),
         isMerged: props?.["Merge-State"]?.checkbox || false,
-        hexcolor: props?.["color"]?.rich_text?.[0]?.text?.content || "",
+        hexcolor: props?.["Color"]?.rich_text?.[0]?.text?.content || "",
         tier: null,
         locationAngle: null,
         distributionAngle: null,
