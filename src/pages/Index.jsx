@@ -275,13 +275,14 @@ const Index = () => {
 
         {/* 左側 技能樹面板 */}
         <div id="skill-tree-panel" 
-             className="relative flex flex-col justify-center items-center
-                        w-full h-[50vh]
-                        md:h-full md:min-w-[50vw]">
+             className={`relative flex flex-col justify-center items-center
+                        w-full 
+                        ${viewMode === 2 ? 'h-full' : 'flex-1 md:h-full'} 
+                        md:flex-1`}>
           {/* 左上 技能樹圖表 */}
           <div id="skill-tree-svg" 
                ref={svgContainerRef}
-               className="overflow-auto max-h-full w-full h-full rounded-md bg-panel flex"
+               className="overflow-auto max-h-full w-full h-full rounded-md bg-panel flex custom-scrollbar"
                style={{
                  alignItems: zoom < 1 ? 'center' : 'flex-start',
                  justifyContent: zoom < 1 ? 'center' : 'flex-start'
@@ -473,7 +474,7 @@ const Index = () => {
 
           {/* 左下 技能樹數值與控制器 */}
           <div id="skill-tree-footer" 
-               className="w-full bg-background flex items-start justify-between">    
+               className="w-full bg-background flex flex-row items-start justify-between gap-2">    
             {viewMode < 2 && (
               <div id="skill-tree-title" 
                   className="py-2 px-4 gap-2 flex items-center z-10">
@@ -522,31 +523,29 @@ const Index = () => {
             )}
             {/* 縮放和旋轉控制按鈕 */}
             <div id="skill-tree-controler" 
-                className="py-2 px-3 flex items-center gap-4 z-10">
+                className={`py-2 px-3 flex items-start gap-2 z-10 ${
+                  viewMode === 1 
+                    ? 'flex-row items-center gap-4' 
+                    : 'flex-col xl:flex-row xl:items-center xl:gap-4'
+                }`}>
               
-              {/* 視圖模式切換 */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-6 w-6"
-                onClick={handleToggleViewMode}
-                title={viewMode === 0 ? "專注模式" : viewMode === 1 ? "極簡模式" : "正常模式"}
-              >
-                {viewMode === 0 ? (
-                  <Minimize className="h-4 w-4" />
-                ) : viewMode === 1 ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize className="h-4 w-4" />
-                )}
-              </Button>
-
-              {/* 分隔線 */}
-              {viewMode < 2 && <div className="h-6 w-px bg-border"></div>}
-              
-              {/* 旋轉控制 */}
-              {viewMode < 2 && (
-                <div id="rotation-control" className="flex items-center gap-1">
+              {/* 第一行：視圖模式切換 + 播放按鈕 */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={handleToggleViewMode}
+                  title={viewMode === 0 ? "專注模式" : viewMode === 1 ? "極簡模式" : "正常模式"}
+                >
+                  {viewMode === 0 ? (
+                    <Minimize className="h-4 w-4" />
+                  ) : viewMode === 1 ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   variant={isAutoRotating ? "default" : "outline"}
                   size="icon"
@@ -560,6 +559,16 @@ const Index = () => {
                     <Play className="h-4 w-4" />
                   )}
                 </Button>
+              </div>
+
+              {/* 分隔線 */}
+              {viewMode < 2 && (
+                <div className={`h-6 w-px bg-border ${viewMode === 1 ? 'block' : 'hidden xl:block'}`}></div>
+              )}
+              
+              {/* 第二行：旋轉控制 */}
+              {viewMode < 2 && (
+                <div id="rotation-control" className="flex items-center gap-1">
                 <span className="text-xs sm:text-sm text-muted-foreground ml-1 min-w-[2.5rem] text-center">
                   {Math.round(rotation)}°
                 </span>
@@ -596,30 +605,12 @@ const Index = () => {
               </div>
               )}
 
-              {/* 自動旋轉按鈕（極簡模式也顯示） */}
-              {viewMode === 2 && (
-                <>
-                  <div className="h-6 w-px bg-border"></div>
-                  <Button
-                    variant={isAutoRotating ? "default" : "outline"}
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={handleToggleAutoRotation}
-                    title={isAutoRotating ? "停止自動旋轉" : "開始自動旋轉"}
-                  >
-                    {isAutoRotating ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <Play className="h-4 w-4" />
-                    )}
-                  </Button>
-                </>
+              {/* 分隔線 */}
+              {viewMode < 2 && (
+                <div className={`h-6 w-px bg-border ${viewMode === 1 ? 'block' : 'hidden xl:block'}`}></div>
               )}
 
-              {/* 分隔線 */}
-              {viewMode < 2 && <div className="h-6 w-px bg-border"></div>}
-
-              {/* 縮放控制 */}
+              {/* 第三行：縮放控制 */}
               {viewMode < 2 && (
                 <div id="zoom-control" className="flex items-center gap-1">
                 <span className="text-xs sm:text-sm text-muted-foreground min-w-[3rem] text-center">
@@ -665,7 +656,7 @@ const Index = () => {
           <div id="content-panel" 
                className="gap-2 md:gap-4 flex flex-col 
                           w-full h-auto
-                          md:w-[clamp(375px,40vw,480px)] md:h-full overflow-hidden">
+                          md:w-[min(40vw,480px)] md:h-full md:flex-shrink-0 overflow-hidden">
           {/* 右上 技能說明欄 */}
           <div id="skill-description-panel" 
                className="w-full bg-panel p-3 sm:p-4 md:p-6 rounded-md overflow-auto

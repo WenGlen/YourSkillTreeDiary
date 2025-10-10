@@ -117,3 +117,38 @@ a {
   /*  
       *{outline: 1px solid #444444;} */
 }
+
+/* 自定义滚动条样式 - 默认隐藏，悬停时显示 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.custom-scrollbar:hover {
+  scrollbar-color: hsl(220 20% 35%) hsl(220 30% 12%);
+}
+
+/* Webkit 浏览器（Chrome, Safari, Edge） */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: hsl(220 20% 35%);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 20% 45%);
+}
