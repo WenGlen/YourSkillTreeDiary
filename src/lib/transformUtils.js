@@ -159,6 +159,7 @@ export const createAutoRotationController = (setRotation, speed = 30) => {
   let animationFrameId = null;
   let lastTimestamp = null;
   
+  const start = () => {
     lastTimestamp = performance.now();
     
     const animate = (timestamp) => {
