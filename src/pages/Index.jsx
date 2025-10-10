@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { NotionConfigDialog } from "@/components/NotionConfigDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Settings, Database, RefreshCw, ChevronDown, ChevronRight, ExternalLink, Calendar, ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw, Play, Pause, Maximize, Minimize, Minimize2 } from "lucide-react";
+import { Settings, RefreshCw, ChevronDown, ChevronRight, ExternalLink, Calendar, ZoomIn, ZoomOut, Maximize2, RotateCcw, RotateCw, Play, Pause, Maximize, Minimize, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,7 +16,6 @@ import {
   getStrokeColor, 
   getFillColor, 
   getFillOpacity,
-  getStrokeWidth,
   renderGlowFilters,
   renderHaloGradients,
   renderHaloCircles,
@@ -33,7 +32,7 @@ import {
   createAutoRotationController,
   applyRotation 
 } from '@/lib/transformUtils.js';
-//import { SkillTreeChart, SkillProgressChart, DiaryTimelineChart } from '@/components/charts';
+
 
 const Index = () => {
   const [showConfig, setShowConfig] = useState(false);
